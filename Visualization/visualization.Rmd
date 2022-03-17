@@ -1,0 +1,170 @@
+---
+title: "Visualization"
+output: html_document
+---
+
+### Loading the required libraries
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(Hmisc)
+library(psych)
+library(tidyr)
+```
+
+### Reading the dataset
+
+```{r}
+movie <- read.csv('../Preprocessing/movie_clean.csv', stringsAsFactors = F)
+```
+
+### Exploratory Analysis
+
+```{r}
+ggplot(aes(x = num_critic_for_reviews), data = movie) + geom_histogram(bins = 20, color = 'white') + ggtitle('Histogram of Number of reviews')
+summary(movie$num_critic_for_reviews)
+```
+
+***
+
+According to this plot most movies have around critic reviews in the range of 50-200 
+
+***
+
+```{r}
+ggplot(aes(x = imdb_score), data = movie) + geom_histogram(bins = 20, color = 'white') + ggtitle('Histogram of Scores') + theme(panel.background = element_rect(fill = "white", colour = "grey50"))
+```
+
+***
+
+Most frequent IMDB scores for movies are in the range 5.0 to 7.5 
+
+***
+
+```{r}
+ggplot(aes(x = title_year), data = movie) + geom_histogram(color='white', bins=40) +
+  ggtitle('Histogram of Title Year') + theme(panel.background = element_rect(fill = "white", colour = "grey50"))
+```
+
+***
+
+This plot tells us the number of movies produced each year. Most of the movies in this dataset are produced after the year 2000
+
+***
+
+```{r}
+boxplot(imdb_score ~ title_year, data=movie, col='indianred')
+title("IMDB score vs Title year")
+```
+
+***
+
+This plot tells us the variation of the IMDB scores over the years. People are ready to give lower scores to movies and this also tells us about the quality of the movies that are being produced. Half a century ago there were only a few players in the movie production market but right now, with the increase of this medium we have seen lots of new producers and directors coming into this market which has led to gradual decrease in the quality of the product with relation to that product.
+
+***
+
+### Plot of top 10 countries vs number of movies produced
+
+```{r}
+country_group <- group_by(movie, country)
+movie_by_country <- summarise(country_group,
+                               mean_score = mean(imdb_score),
+                               n = n())
+aa = movie_by_country[order(-movie_by_country$n), ] %>%
+        head(10)
+ggplot(aes(x = country, y = n, fill = country), data = aa) + geom_bar(stat = 'identity') + theme(legend.position = "none", axis.text=element_text(size=6)) +
+  coord_flip() + ggtitle('Countries vs Number of Movies')
+```
+
+***
+
+The Highest number of movies is produced by the USA
+
+***
+
+### Top 30 mean scores of countries
+
+```{r}
+aa = movie_by_country[order(-movie_by_country$n), ] %>%
+        head(30)
+ggplot(aes(x = country, y = mean_score, fill = country), data = aa) + geom_bar(stat = 'identity') + theme(legend.position = "none", axis.text=element_text(size=7)) +
+  coord_flip() + ggtitle('Countries vs IMDB Scores')
+```
+
+***
+
+This is a plot of mean IMDB score of each country. Even though USA produced the highest number of movies, Libya has the highest average score. The difference in the average scores is in between 4 and 8.
+
+***
+
+### Top 20 highest-rated movie
+
+```{r}
+movie[order(-movie$imdb_score), ] %>%
+  select(movie_title) %>%
+    head(20)
+```
+
+### Top 20 lowest-rated movie
+
+```{r}
+movie[order(movie$imdb_score), ] %>%
+  select(movie_title) %>%
+    head(20)
+```
+
+### Average movie duration 
+
+```{r}
+mean(movie$duration)
+```
+
+### Count of movies based on language
+
+```{r}
+lang = movie %>%
+        group_by(language) %>%
+          summarise(n=n()) 
+lang[order(-lang$n), ]
+```
+
+```{r}
+genres = subset(na.omit(movie), select = c(29:54))
+
+sum = mapply(sum, genres[,]) %>%
+        sort(decreasing = TRUE)
+```
+
+```{r}
+genre_count = genres %>%
+                gather() %>%
+                  group_by(key) %>%
+                    summarise(value = sum(value==1))
+```
+
+```{r}
+ggplot(genre_count, aes(x=key, y=value, fill=key)) + geom_bar(stat="identity") + theme(legend.position = "none", axis.text=element_text(size=6)) + coord_flip() + ylab("Count") + xlab("Genre") + ggtitle('Genre Counts')
+```
+
+***
+
+Drama is the most produced genre with a count of 2586
+
+***
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
