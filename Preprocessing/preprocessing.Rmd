@@ -1,0 +1,109 @@
+---
+title: "Preprocessing"
+output: html_document
+---
+
+### Loading the required libraries
+
+```{r}
+library(dplyr)
+```
+
+### Reading the dataset
+
+```{r}
+movie <- read.csv('movie_metadata.csv', stringsAsFactors = F)
+str(movie)
+```
+
+### Dimension of the dataset
+
+```{r}
+dim(movie)
+```
+
+### Summary of the dataset
+
+```{r}
+summary(movie)
+```
+
+***
+
+### Data Cleaning
+
+```{r}
+movie$imdb_score <- as.numeric(impute(movie$imdb_score, mean))
+movie$num_critic_for_reviews <- as.numeric(impute(movie$num_critic_for_reviews, mean))
+movie$duration <- as.numeric(impute(movie$duration, mean))
+movie$director_facebook_likes <- as.numeric(impute(movie$director_facebook_likes, mean))
+movie$actor_3_facebook_likes <- as.numeric(impute(movie$actor_3_facebook_likes, mean))
+movie$actor_1_facebook_likes <- as.numeric(impute(movie$actor_1_facebook_likes, mean))
+movie$gross <- as.numeric(impute(movie$gross, mean))
+movie$cast_total_facebook_likes <- as.numeric(impute(movie$cast_total_facebook_likes, mean))
+movie$facenumber_in_poster <- as.numeric(impute(movie$facenumber_in_poster, mean))
+movie$budget <- as.numeric(impute(movie$budget, mean))
+movie$title_year <- as.numeric(impute(movie$title_year, median))
+movie$actor_2_facebook_likes <- as.numeric(impute(movie$actor_2_facebook_likes, mean))
+movie$aspect_ratio <- as.numeric(impute(movie$aspect_ratio, mean))
+
+```
+
+### Separating genres into different columns
+
+```{r}
+movie <- movie %>%
+  mutate(genres=gsub("[-]","",genres))
+movie = movie %>%
+  mutate(row = row_number()) %>%
+    separate_rows(genres, sep = '\\|') %>%
+      pivot_wider(names_from = genres, values_from = genres, values_fn = function(x) 1, values_fill = 0) %>%
+        select(-row)
+
+movie = na.omit(movie)
+
+```
+
+```{r}
+genres = subset(movie, select = c(28:53))
+
+sum = mapply(sum, genres[,]) %>%
+        sort(decreasing = TRUE)
+```
+
+```{r}
+genre_count = genres %>%
+                gather() %>%
+                  group_by(key) %>%
+                    summarise(value = sum(value==1))
+```
+
+```{r}
+head(movie)
+```
+
+```{r}
+write.csv(movie, "movie_clean.csv")
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+
