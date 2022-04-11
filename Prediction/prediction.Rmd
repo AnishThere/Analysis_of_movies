@@ -11,6 +11,7 @@ library(dplyr)
 library(Hmisc)
 library(psych)
 library(tidyr)
+library(yardstick)
 ```
 
 ### Reading the dataset
@@ -147,9 +148,22 @@ rpart.plot(fit)
 ```
 
 ```{r}
+library(tibble)
+
 predicted <- predict(fit, test_sample, type = 'class')
 table_mat <- table(test_sample$imdb_cat, predicted)
 table_mat
+
+truth_predicted <- data.frame(
+  obs = test_sample$imdb_cat,
+  pred = predicted
+)
+truth_predicted$obs <- as.factor(truth_predicted$obs)
+truth_predicted$pred <- as.factor(truth_predicted$pred)
+
+table_mat1 <- conf_mat(truth_predicted, obs, pred)
+autoplot(table_mat1, type="heatmap") +
+  scale_fill_gradient(low="#D6EAF8",high = "#2E86C1")
 ```
 
 ```{r}
@@ -188,7 +202,19 @@ y_pred <- predict(classifier_cl, newdata = test_cl)
 
 cm <- table(test_cl$imdb_cat, y_pred)
 cm
+
 print(paste("Accuracy", sum(diag(cm)) / sum(cm)))
+#plot(cm, title="Confusion matrix for Naive Bayes")
+truth_predicted <- data.frame(
+  obs = test_cl$imdb_cat,
+  pred = y_pred
+)
+truth_predicted$obs <- as.factor(truth_predicted$obs)
+truth_predicted$pred <- as.factor(truth_predicted$pred)
+
+table_mat1 <- conf_mat(truth_predicted, obs, pred)
+autoplot(table_mat1, type="heatmap") +
+  scale_fill_gradient(low="#D6EAF8",high = "#2E86C1")
 ```
 
 ***
@@ -223,6 +249,19 @@ classifier_knn <- knn(train = train_cl,
                       k =100)
 cm <- table(test_sample$imdb_cat, classifier_knn)
 cm
+#plot(cm, title="Confusion matrix for KNN")
+
+truth_predicted <- data.frame(
+  obs = test_sample$imdb_cat,
+  pred = classifier_knn
+)
+truth_predicted$obs <- as.factor(truth_predicted$obs)
+truth_predicted$pred <- as.factor(truth_predicted$pred)
+
+table_mat1 <- conf_mat(truth_predicted, obs, pred)
+autoplot(table_mat1, type="heatmap") +
+  scale_fill_gradient(low="#D6EAF8",high = "#2E86C1")
+
 misClassError <- mean(classifier_knn != test_sample$imdb_cat)
 print(paste('Accuracy =', 1-misClassError))
 ```
@@ -233,6 +272,18 @@ Accuracy of 42% was achieved with KNN classifier
 
 ***
 
+```{r}
+
+```
+
+```{r}
+library(plotly)
+library(ggfortify)
+library(cluster)
+p <- autoplot(pam(train_cl, 3), frame = TRUE, frame.type = 'norm')
+
+ggplotly(p)
+```
 
 ## Neural networks
 
